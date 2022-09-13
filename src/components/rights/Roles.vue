@@ -43,7 +43,7 @@
           <template slot-scope="scope">
             <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditRoles(scope.row.id)">编辑</el-button>
             <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteEditRolesById(scope.row.id)">删除</el-button>
-            <el-button type="warning" icon="el-icon-setting" size="mini" @click="showSetRights()">分配权限</el-button>
+            <el-button type="warning" icon="el-icon-setting" size="mini" @click="showSetRights(scope.row)">分配权限</el-button>
           </template>
           
         </el-table-column>
@@ -73,6 +73,7 @@
         <el-button type="primary" @click="addRoles">确 定</el-button>
       </span>
     </el-dialog>
+
     <!-- 修改角色对话框 -->
     <el-dialog
       title="修改角色"
@@ -96,6 +97,7 @@
         <el-button type="primary" @click="editRoles">确 定</el-button>
       </span>
     </el-dialog>
+
     <!-- 分配角色权限对话框 -->
     <el-dialog
       title="分配权限"
@@ -107,7 +109,9 @@
         show-checkbox
         node-key="id"
         default-expand-all
-        :props="treeProps">
+        :props="treeProps"
+        :default-checked-keys="defKeys"
+        ref="treeRef">
       </el-tree>
       <span slot="footer">
         <el-button @click="setRightsDialogVisible = false">取 消</el-button>
@@ -164,6 +168,10 @@ export default {
           {required:true,message:'请输入角色描述',trigger:'blur'}
         ]
       },
+      //默认展开节点数组
+      defKeys:[],
+      //分配权限的id
+      roleId:''
     }
   },
   created(){
@@ -287,7 +295,8 @@ export default {
         }
     },
     // 展示分配角色权限
-    async showSetRights(){
+    async showSetRights(row){
+      this.roleId=row.id
       const {data:res}=await this.$http.get(`rights/tree`)
       console.log("分配权限",res);
       if(res.meta.status!==200){
@@ -295,10 +304,41 @@ export default {
       }else{
         this.treeRightsList=res.data
         this.setRightsDialogVisible=true
+        // 递归获取三级节点的id
+        this.getLeafKeys(row,this.defKeys)
       }
     },
-    closeRightsDialog(){},
-    confirmSetRights(){}
+    //关闭对话框后，重置节点数组
+    closeRightsDialog(){
+      this.defKeys=[]
+    },
+    getLeafKeys(node,arr){
+      // 如果当前 node 节点不包含children属性，则是三级节点
+      if(!node.children){
+        return arr.push(node.id)
+      }else{
+        node.children.forEach(item=>{
+          this.getLeafKeys(item,arr)
+        })
+      }
+    },
+    async confirmSetRights(){
+      const keys=[
+        ...this.$refs.treeRef.getCheckedKeys(),
+        ...this.$refs.treeRef.getHalfCheckedKeys()
+      ]
+      const idStr=keys.join(",")
+      const {data:res}=await this.$http.post(`roles/${this.roleId}/rights`,
+      {rids:idStr})
+      // console.log("确认分配权限",res);
+      if(res.meta.status!==200){
+        this.$message.error("分配权限失败")
+      }else{
+        this.$message.success("分配权限成功")
+        this.setRightsDialogVisible=false
+        this.getRolesList()
+      }
+    }
   }
 }
 </script>

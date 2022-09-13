@@ -10,20 +10,20 @@
     <el-card shadow="never">
       <!-- 搜索区域 -->
       <div class="search-btn">
-        <el-input placeholder="通过收获地址搜索" v-model="queryInfo.query" clearable @clear="getOrderList">
+        <el-input placeholder="通过发货地址搜索" v-model="queryInfo.consignee_addr" clearable @clear="getOrderList">
           <el-button slot="append" icon="el-icon-search" @click="getOrderList"></el-button>
         </el-input>
       </div>
       <!-- 订单列表数据 -->
       <el-table :data="orderTableData" border stripe style="width: 100%">
         <el-table-column label="#" type="index"></el-table-column>
-        <el-table-column label="收获地址">
+        <el-table-column label="发货地址">
           <template slot-scope="scope">
             <div v-if="scope.row.consignee_addr!==''">{{scope.row.consignee_addr}}</div>
-            <div v-else style="color:#9a9da2;">暂无收获地址</div>
+            <div v-else style="color:#9a9da2;">暂无发货地址</div>
           </template>
         </el-table-column>
-        <el-table-column prop="order_number" label="订单编号" width="190"></el-table-column>
+        <el-table-column prop="order_number" label="订单编号" width="200"></el-table-column>
         <el-table-column prop="order_price" label="订单价格"></el-table-column>
         <el-table-column prop="is_send" label="是否发货">
           <template slot-scope="scope">
@@ -37,7 +37,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="is_send" label="是否发货"></el-table-column>
-        <el-table-column label="下单时间" width="151">
+        <el-table-column label="下单时间" width="161">
           <template slot-scope="scope">
             {{scope.row.create_time | dateFormat}}
           </template>
@@ -107,8 +107,8 @@ export default {
     return{
       orderTableData:[],
       queryInfo:{
-        // 查询对象
-        query:"",
+        // 查询对象,发货地址
+        consignee_addr:"",
         // consignee_addr:"梧州",
         // 当前页码
         pagenum:1,
