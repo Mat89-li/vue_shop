@@ -22,6 +22,7 @@ axios.interceptors.request.use( config => {
   // 最后必须 return config
   return config
 })
+Vue.prototype.$http=axios;
 // 时间格式
 Vue.filter("dateFormat",function(dateParams){
   const dt=new Date(dateParams)
@@ -34,7 +35,6 @@ Vue.filter("dateFormat",function(dateParams){
   return `${y}-${m}-${d} ${hour}:${minute}:${seconds}`
 })
 
-Vue.prototype.$http=axios;
 
 new Vue({
   router,
